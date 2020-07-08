@@ -3,7 +3,7 @@
     <!-- 头部区域 -->
     <el-header>
       <div>
-        <img src="../assets/icon2.png" alt="" />
+        <img src="../assets/img/icon2.png" alt />
         <span>电商后台管理系统</span>
       </div>
       <el-button type="info" @click="logout">退出</el-button>
@@ -13,26 +13,22 @@
       <!-- 左侧侧边栏 -->
       <el-aside width="200px">
         <!-- 侧边栏菜单区域 -->
-        <el-menu
-          background-color="#777777"
-          text-color="#fff"
-          active-text-color="#cccccc"
-        >
+        <el-menu background-color="#777777" text-color="#fff" active-text-color="#ffd04b">
           <!-- 一级菜单 -->
-          <el-submenu index="1">
+          <el-submenu :index="item.id + ''" :key="item.id" v-for="item in menuList">
             <!-- 一级菜单模板区域 -->
             <template slot="title">
-              <!-- 图标 -->
-              <i class="el-icon-location"></i>
-              <!-- 文本 -->
-              <span>导航一</span>
+              <!-- 一级菜单图标 -->
+              <i :class="iconsList[item.id]"></i>
+              <!-- 一级菜单文本 -->
+              <span>{{item.authName}}</span>
             </template>
-            <el-menu-item index="1-1">
+            <el-menu-item :index="item.id + '-' + em.id" :key="em.id" v-for="em in item.children">
               <template slot="title">
-                <!-- 图标 -->
-                <i class="el-icon-location"></i>
-                <!-- 文本 -->
-                <span>选项1</span>
+                <!-- 二级菜单图标 -->
+                <i class="el-icon-menu"></i>
+                <!-- 二级菜单文本 -->
+                <span>{{em.authName}}</span>
               </template>
             </el-menu-item>
           </el-submenu>
@@ -51,7 +47,14 @@ export default {
   data() {
     return {
       // 左侧菜单数据
-      menuList: []
+      menuList: [],
+      iconsList: {
+        '125': 'iconfont icon-user',
+        '103': 'iconfont icon-tijikongjian',
+        '101': 'iconfont icon-shangpin',
+        '102': 'iconfont icon-danju',
+        '145': 'iconfont icon-baobiao',
+      }
     }
   },
   methods: {
@@ -61,15 +64,15 @@ export default {
     },
     // 获取所有菜单
     async getMenuList() {
-      const {data: res} = await this.$http.get('menus')
+      const { data: res } = await this.$http.get('menus')
       if (res.meta.status !== 200) {
-        return this.$message.error(res.meta.msg);
+        return this.$message.error(res.meta.msg)
       }
       this.menuList = res.data
     }
   },
   created() {
-    this.getMenuList();
+    this.getMenuList()
   }
 }
 </script>
@@ -90,6 +93,7 @@ export default {
   > div {
     display: flex;
     align-items: center;
+    padding-left: 10px;
     > span {
       margin-left: 5px;
     }
@@ -102,5 +106,9 @@ export default {
 
 .el-main {
   background-color: #ffffff;
+}
+
+.iconfont {
+  margin-right: 8px;
 }
 </style>
