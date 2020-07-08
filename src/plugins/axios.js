@@ -12,6 +12,7 @@ const config = {
   // baseURL: process.env.baseURL || process.env.apiUrl || ""
   // timeout: 60 * 1000, // Timeout
   // withCredentials: true, // Check cross-site Access-Control
+  baseURL: 'http://127.0.0.1:8888/api/private/v1/'
 }
 
 const _axios = axios.create(config)
@@ -19,6 +20,8 @@ const _axios = axios.create(config)
 _axios.interceptors.request.use(
   function (config) {
     // Do something before request is sent
+    // axios请求拦截器
+    config.headers.Authorization = window.sessionStorage.getItem('token')
     return config
   },
   function (error) {
@@ -57,5 +60,7 @@ Plugin.install = function (Vue, options) {
 }
 
 Vue.use(Plugin)
+// 将axios挂载到vue上
+Vue.prototype.$http = _axios
 
 export default Plugin
