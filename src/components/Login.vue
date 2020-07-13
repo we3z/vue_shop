@@ -14,11 +14,11 @@
         class="login_form"
       >
         <!-- 账号 -->
-        <el-form-item prop="username">
+        <el-form-item prop="email">
           <el-input
-            v-model="loginForm.username"
+            v-model="loginForm.email"
             prefix-icon="iconfont icon-user"
-            ref="usernameInputRef"
+            ref="emailInputRef"
           ></el-input>
         </el-form-item>
         <!-- 密码 -->
@@ -45,14 +45,13 @@ export default {
   data() {
     return {
       loginForm: {
-        username: 'admin',
+        email: 'we3z2020@163.com',
         password: '123456'
       },
       // 验证规则对象
       loginFormRules: {
-        username: [
-          { required: true, message: '请输入账号', trigger: 'blur' },
-          { min: 3, max: 12, message: '长度在 3 到 12 个字符', trigger: 'blur' }
+        email: [
+          { type: 'email', required: true, message: '请输入邮箱', trigger: 'change' }
         ],
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' },
@@ -69,7 +68,7 @@ export default {
           return
         }
         const { data: result } = await this.$http.post('login', this.loginForm)
-        if (result.meta.status != 200) {
+        if (result.meta.status !== 200) {
           return this.$message.error('登录失败')
         } else {
           this.$message.success('登录成功')
@@ -85,7 +84,7 @@ export default {
     // 点击重置按钮，重置表单数据
     onReset() {
       this.$refs.loginFormRef.resetFields()
-      this.$refs.usernameInputRef.focus()
+      this.$refs.emailInputRef.focus()
     }
   }
 }
