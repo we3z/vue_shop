@@ -240,7 +240,7 @@ export default {
           this.$message.success(res.meta.msg)
           // 修改父组件显示数据
           const roleIndex = this.rolesList.findIndex(item => {
-            return item.id == res.data.roleId
+            return item.id === res.data.roleId
           })
           this.rolesList[roleIndex].roleName = res.data.roleName
           this.rolesList[roleIndex].roleDesc = res.data.roleDesc
