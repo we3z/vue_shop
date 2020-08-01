@@ -19,67 +19,37 @@
             @clear="clearSearchInput"
             clearable
           >
-            <el-button
-              slot="append"
-              icon="el-icon-search"
-              @click="getUserList"
-            ></el-button>
+            <el-button slot="append" icon="el-icon-search" @click="getUserList"></el-button>
           </el-input>
         </el-col>
         <el-col :span="4">
-          <el-button type="primary" @click="addDialogVisiable = true"
-            >添加用户</el-button
-          >
+          <el-button type="primary" @click="addDialogVisiable = true">添加用户</el-button>
         </el-col>
       </el-row>
       <el-table :data="userList" stripe style="width: 100%;" border>
         <el-table-column type="index" label="序号"></el-table-column>
-        <el-table-column
-          prop="username"
-          label="姓名"
-          width="180"
-        ></el-table-column>
-        <el-table-column
-          prop="email"
-          label="邮箱"
-          width="180"
-        ></el-table-column>
-        <el-table-column
-          prop="mobile"
-          label="电话"
-          width="180"
-        ></el-table-column>
+        <el-table-column prop="username" label="姓名" width="180"></el-table-column>
+        <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
+        <el-table-column prop="mobile" label="电话" width="180"></el-table-column>
         <el-table-column prop="role_name" label="角色"></el-table-column>
         <el-table-column label="状态">
           <template slot-scope="scope">
-            <el-switch
-              v-model="scope.row.mg_state"
-              @change="changeUserStatus(scope.row)"
-            ></el-switch>
+            <el-switch v-model="scope.row.mg_state" @change="changeUserStatus(scope.row)"></el-switch>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="180">
           <template slot-scope="scope">
             <!-- 分配角色按钮 -->
-            <el-tooltip
-              effect="dark"
-              content="为用户分配角色"
-              placement="top-start"
-              :enterable="false"
-            >
+            <el-tooltip effect="dark" content="为用户分配角色" placement="top-start" :enterable="false">
               <el-button
                 type="warning"
                 size="mini"
                 icon="el-icon-setting"
+                @click="allowUserRole(scope.row)"
               ></el-button>
             </el-tooltip>
             <!-- 编辑用户按钮 -->
-            <el-tooltip
-              effect="dark"
-              content="编辑用户"
-              placement="top-start"
-              :enterable="false"
-            >
+            <el-tooltip effect="dark" content="编辑用户" placement="top-start" :enterable="false">
               <el-button
                 type="primary"
                 size="mini"
@@ -89,12 +59,7 @@
             </el-tooltip>
 
             <!-- 删除用户按钮 -->
-            <el-tooltip
-              effect="dark"
-              content="删除用户"
-              placement="top-start"
-              :enterable="false"
-            >
+            <el-tooltip effect="dark" content="删除用户" placement="top-start" :enterable="false">
               <el-button
                 type="danger"
                 size="mini"
@@ -116,12 +81,7 @@
       ></el-pagination>
     </el-card>
     <!-- 添加用户的对话框 -->
-    <el-dialog
-      title="添加用户"
-      :visible.sync="addDialogVisiable"
-      width="30%"
-      @close="closeAddUserForm"
-    >
+    <el-dialog title="添加用户" :visible.sync="addDialogVisiable" width="30%" @close="closeAddUserForm">
       <!-- 内容主体区域 -->
       <el-form
         ref="addUserFormRef"
@@ -182,6 +142,21 @@
         <el-button type="primary" @click="editUserFormHandle">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 分配角色对话框 -->
+    <el-dialog title="提示" :visible.sync="allowUserRoleVisable" width="30%">
+      <p>当前的用户: {{nowUserName}}</p>
+      <p>当前的角色: {{nowRoleName}}</p>
+      <p>
+        <span>分配新角色 </span>
+        <el-select v-model="checkedRoleId" placeholder="请选择" size="medium">
+          <el-option v-for="item in roleList" :key="item.id" :label="item.roleName" :value="item.id"></el-option>
+        </el-select>
+      </p>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="closeUserAllowRoleDialog">取 消</el-button>
+        <el-button type="primary" @click="submitUserAllowRole">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -221,7 +196,7 @@ export default {
         query: '',
         // 当前页数
         pagenum: 1,
-        pagesize: 5
+        pagesize: 5,
       },
       // 控制添加用户对话框的显示和隐藏
       addDialogVisiable: false,
@@ -230,7 +205,7 @@ export default {
         username: '',
         password: '',
         email: '',
-        mobile: ''
+        mobile: '',
       },
       // 表单验证规则
       addUserFormRules: {
@@ -240,8 +215,8 @@ export default {
             min: 3,
             max: 15,
             message: '用户名的长度在3~15个字符',
-            trigger: 'blur'
-          }
+            trigger: 'blur',
+          },
         ],
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' },
@@ -249,17 +224,17 @@ export default {
             min: 6,
             max: 15,
             message: '密码的长度在3~15个字符',
-            trigger: 'blur'
-          }
+            trigger: 'blur',
+          },
         ],
         email: [
           { required: true, message: '请输入邮箱', trigger: 'blur' },
-          { validator: checkEmail, trigger: 'blur' }
+          { validator: checkEmail, trigger: 'blur' },
         ],
         mobile: [
           { required: true, message: '请输入手机号', trigger: 'blur' },
-          { validator: checkMobile, trigger: 'blur' }
-        ]
+          { validator: checkMobile, trigger: 'blur' },
+        ],
       },
       // 控制编辑用户信息对话框的显示和隐藏
       editDialogVisiable: false,
@@ -267,25 +242,34 @@ export default {
         id: '',
         username: '',
         email: '',
-        mobile: ''
+        mobile: '',
       },
       editUserFormRules: {
         email: [
           { required: true, message: '请输入邮箱', trigger: 'blur' },
-          { validator: checkEmail, trigger: 'blur' }
+          { validator: checkEmail, trigger: 'blur' },
         ],
         mobile: [
           { required: true, message: '请输入手机号', trigger: 'blur' },
-          { validator: checkMobile, trigger: 'blur' }
-        ]
-      }
+          { validator: checkMobile, trigger: 'blur' },
+        ],
+      },
+      // 分配用户角色
+      allowUserRoleVisable: false,
+      // 角色列表
+      roleList: [],
+      // 选中的角色
+      checkedRoleId: '',
+      allowRoleUserId: '',
+      nowUserName: '',
+      nowRoleName: ''
     }
   },
   methods: {
     // 获取相关数据
     async getUserList() {
       const { data: res } = await this.$http.get('/users', {
-        params: this.queryInfo
+        params: this.queryInfo,
       })
       if (res.meta.status !== 200) {
         return this.$message.error(res.meta.msg)
@@ -329,7 +313,7 @@ export default {
     },
     // 保存新增数据
     addUserFormHandle() {
-      this.$refs.addUserFormRef.validate(async valid => {
+      this.$refs.addUserFormRef.validate(async (valid) => {
         // 进行数据验证
         if (!valid) {
           return
@@ -364,7 +348,7 @@ export default {
     },
     // 处理编辑用户功能
     editUserFormHandle() {
-      this.$refs.editUserFormRef.validate(async valid => {
+      this.$refs.editUserFormRef.validate(async (valid) => {
         // 进行数据验证
         if (!valid) {
           return
@@ -373,14 +357,14 @@ export default {
           `users/${this.editUserForm.id}`,
           {
             email: this.editUserForm.email,
-            mobile: this.editUserForm.mobile
+            mobile: this.editUserForm.mobile,
           }
         )
         if (res.meta.status !== 200) {
           return this.$message.error(res.meta.msg)
         } else {
           // 修改页面显示数据
-          var index = this.userList.findIndex(function(item) {
+          var index = this.userList.findIndex(function (item) {
             return item.id === res.data.id
           })
           this.userList[index].email = res.data.email
@@ -392,11 +376,12 @@ export default {
         }
       })
     },
+    // 删除角色
     deleteUser(id) {
       this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning'
+        type: 'warning',
       })
         .then(async () => {
           const { data: res } = await this.$http.delete(`users/${id}`)
@@ -410,12 +395,54 @@ export default {
         .catch(() => {
           this.$message.info('已取消删除')
         })
-    }
+    },
+    // 分配角色权限
+    async allowUserRole(userInfo) {
+      // 查询用户信息
+      const { data: resUser } = await this.$http.get(`users/${userInfo.id}`)
+      if (resUser.meta.status !== 200) {
+        return this.$message.error(resUser.meta.msg)
+      }
+      // 获取权限角色列表
+      const { data: resRole } = await this.$http.get('roles')
+      if (resRole.meta.status !== 200) {
+        return this.$message.error(resRole.meta.msg)
+      }
+      this.checkedRoleId = resUser.data.role_id
+      this.allowRoleUserId = userInfo.id
+      this.roleList = resRole.data
+      this.nowUserName = userInfo.username
+      this.nowRoleName = userInfo.role_name
+      this.allowUserRoleVisable = true
+    },
+    // 关闭用户分配角色弹框
+    closeUserAllowRoleDialog() {
+      this.checkedRoleId = ''
+      this.allowRoleUserId = ''
+      this.allowUserRoleVisable = false
+      this.nowUserName = ''
+      this.nowRoleName = ''
+      this.roleList = []
+    },
+    // 提交用户分配角色权限
+    async submitUserAllowRole() {
+      const userId = this.allowRoleUserId
+      const roleId = this.checkedRoleId
+      const { data: res } = await this.$http.put(`users/${userId}/role`, {
+        rid: roleId,
+      })
+      if (res.meta.status !== 200) {
+        return this.$message.error(res.meta.msg)
+      }
+      this.$message.success(res.meta.msg)
+      this.closeUserAllowRoleDialog()
+      this.getUserList()
+    },
   },
   created() {
     // 初始化数据
     this.getUserList()
-  }
+  },
 }
 </script>
 
